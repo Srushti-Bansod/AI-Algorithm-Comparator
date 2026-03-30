@@ -50,3 +50,18 @@ Browser animates the results on HTML5 Canvas
    ```
 
 4. Pick a problem, select algorithms, hit **▶ START BATTLE**!
+
+## Algorithms 
+- **Breadth First Search(BFS)** - explores level by level (queue)
+- **Depth First Search(DFS)** - dives deep first (stack) 
+- ** A* Algorithm** - cost + heuristic estimate
+- **Greedy Algorithm** - always moves toward goal
+- **Uniform Cost Structure(UCS)** - cheapest node first (no heuristic)
+- **Dijkstra Algorithm** - shortest path to all nodes
+
+## Problems
+- **Maze Solver** - classic recursive-backtracking maze, find S→G
+- **Treasure Hunt** - open grid with terrain costs, find nearest treasure
+- **Escape Sim** - escape a room with fire hazards through any exit
+- **8-Puzzle** - slide tiles to reach goal state [1,2,3,4,5,6,7,8,_]
+
