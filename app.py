@@ -48,7 +48,6 @@ def refresh_grid():
 refresh_grid()
 
 # ─── ROUTES ──────────────────────────────────────────────────────────────────
-
 @app.route('/')
 def index():
     """Serve the main HTML page."""
@@ -120,3 +119,28 @@ def run_algorithm(algo):
         res = {"found": False, "path": [], "visited": [], "nodes": 0, "cost": 0}
 
     return res
+def get_state_payload():
+    """Build a JSON-serialisable snapshot of the current problem state."""
+    return {
+        'prob': state['prob'],
+        'rows': state['rows'],
+        'cols': state['cols'],
+        'grid': state['grid'],
+        'src': list(state['src']) if state['src'] else None,
+        'dst': list(state['dst']) if state['dst'] else None,
+        'treasures': [list(t) for t in state['treasures']],
+        'traps': [list(t) for t in state['traps']],
+        'exits': [list(e) for e in state['exits']],
+        'fire': [list(f) for f in state['fire']],
+        'puzzle': state['puzzle'],
+        'goal': PUZZLE_GOAL,
+    }
+
+
+# ─── ENTRY POINT ─────────────────────────────────────────────────────────────
+if __name__ == '__main__':
+    print("=" * 50)
+    print("  Algorithm Battlefield — Flask Server")
+    print("  Open http://localhost:5000 in your browser")
+    print("=" * 50)
+    app.run(debug=True, port=5000)
