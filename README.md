@@ -54,7 +54,7 @@ Browser animates the results on HTML5 Canvas
 ## Algorithms 
 - **Breadth First Search(BFS)** - explores level by level (queue)
 - **Depth First Search(DFS)** - dives deep first (stack) 
-- ** A* Algorithm** - cost + heuristic estimate
+- **A\* Algorithm** - cost + heuristic estimate
 - **Greedy Algorithm** - always moves toward goal
 - **Uniform Cost Structure(UCS)** - cheapest node first (no heuristic)
 - **Dijkstra Algorithm** - shortest path to all nodes
