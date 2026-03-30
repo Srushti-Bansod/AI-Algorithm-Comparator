@@ -10,7 +10,6 @@ algo_battle/
 ├── algorithms.py   ← All 6 search algorithms + maze/puzzle generators (Python)
 ├── app.py          ← Flask web server (REST API)
 ├── index.html      ← Frontend UI 
-└── requirements.txt
 ```
 ## How It Works
 
