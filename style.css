@@ -723,14 +723,50 @@ body{
     margin-bottom:5px;
 }
 
-.alg-chart-dot{width:7px;height:7px;border-radius:50%;}
-.alg-chart-name{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;}
-.alg-chart-stat{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-dim);}
-.alg-chart-wrap{position:relative;height:48px;}
+.alg-chart-dot{
+    width:7px;
+    height:7px;
+    border-radius:50%;
+}
+
+.alg-chart-name{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    font-weight:700;
+}
+
+.alg-chart-stat{
+    margin-left:auto;
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    color:var(--text-dim);
+}
+
+.alg-chart-wrap{
+    position:relative;
+    height:48px;
+}
 
 /* COMPARE */
-.metric-sel{display:flex;gap:3px;margin-bottom:8px;flex-wrap:wrap;}
-.msel-btn{padding:4px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;transition:all .15s;}
+.metric-sel{
+    display:flex;
+    gap:3px;
+    margin-bottom:8px;
+    flex-wrap:wrap;
+}
+
+.msel-btn{
+    padding:4px 8px;
+    background:var(--surface2);
+    border:1px solid var(--border);
+    border-radius:4px;
+    color:var(--text-dim);
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    cursor:pointer;
+    transition:all .15s;
+}
+
 .msel-btn:hover{border-color:var(--border2);color:var(--text);}
 .msel-btn.act{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.06);}
 .grouped-chart-wrap{position:relative;height:110px;}
