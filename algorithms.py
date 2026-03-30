@@ -323,3 +323,89 @@ def grid_search(algo, grid, src, is_goal_fn, neighbors_fn, heuristic_fn, cost_fn
 
     return {"found": False, "path": [], "visited": visited_order, "nodes": nodes_visited, "cost": 0}
 
+# ─── PROBLEM-SPECIFIC SOLVERS ────────────────────────────────────────────────
+def solve_maze(algo, grid, src, dst):
+    """Solve a maze: find path from src to dst."""
+    rows, cols = len(grid), len(grid[0])
+
+    def neighbors(r, c):
+        result = []
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 0:
+                result.append((nr, nc))
+        return result
+
+    def heuristic(r, c):
+        # Manhattan distance to destination (admissible for grids)
+        return abs(r - dst[0]) + abs(c - dst[1])
+
+    def cost(r, c):
+        return 1  # all moves cost the same in a maze
+
+    def is_goal(r, c):
+        return (r, c) == dst
+
+    return grid_search(algo, grid, src, is_goal, neighbors, heuristic, cost)
+
+
+def solve_treasure(algo, grid, src, treasures):
+    """Find path from src to the nearest treasure."""
+    if not treasures:
+        return {"found": False, "path": [], "visited": [], "nodes": 0, "cost": 0}
+
+    rows, cols = len(grid), len(grid[0])
+
+    # Target: closest treasure by Manhattan distance
+    target = min(treasures, key=lambda t: abs(t[0] - src[0]) + abs(t[1] - src[1]))
+
+    def neighbors(r, c):
+        result = []
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] != 99:
+                result.append((nr, nc))
+        return result
+
+    def heuristic(r, c):
+        return abs(r - target[0]) + abs(c - target[1])
+
+    def cost(r, c):
+        # Terrain cost: value 1/2/3 maps directly to movement cost
+        v = grid[r][c]
+        return v if v in (1, 2, 3) else 1
+
+    def is_goal(r, c):
+        return (r, c) == target
+
+    return grid_search(algo, grid, src, is_goal, neighbors, heuristic, cost)
+
+
+def solve_escape(algo, grid, src, exits, fire):
+    """Find path from src to any exit, avoiding fire (high cost)."""
+    if not exits:
+        return {"found": False, "path": [], "visited": [], "nodes": 0, "cost": 0}
+
+    rows, cols = len(grid), len(grid[0])
+    fire_set = set(fire)
+
+    def neighbors(r, c):
+        result = []
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 0:
+                result.append((nr, nc))
+        return result
+
+    def heuristic(r, c):
+        # Distance to nearest exit
+        return min(abs(r - er) + abs(c - ec) for er, ec in exits)
+
+    def cost(r, c):
+        # Fire tiles are passable but very costly
+        return 5 if (r, c) in fire_set else 1
+
+    def is_goal(r, c):
+        return (r, c) in set(exits)
+
+    return grid_search(algo, grid, src, is_goal, neighbors, heuristic, cost)
