@@ -46,3 +46,77 @@ def refresh_grid():
 
 # Generate initial maze on startup
 refresh_grid()
+
+# ─── ROUTES ──────────────────────────────────────────────────────────────────
+
+@app.route('/')
+def index():
+    """Serve the main HTML page."""
+    return send_from_directory('.', 'index.html')
+
+
+@app.route('/api/generate', methods=['POST'])
+def api_generate():
+    """
+    Generate a new problem.
+    Body (JSON):
+        prob  — 'maze' | 'treasure' | 'escape' | 'puzzle'
+        rows  — grid height (optional)
+        cols  — grid width (optional)
+    """
+    data = request.get_json() or {}
+    state['prob'] = data.get('prob', state['prob'])
+    if 'rows' in data:
+        state['rows'] = data['rows']
+    if 'cols' in data:
+        state['cols'] = data['cols']
+
+    refresh_grid()
+
+    return jsonify(get_state_payload())
+
+
+@app.route('/api/solve', methods=['POST'])
+def api_solve():
+    """
+    Solve the current problem with selected algorithms.
+    Body (JSON):
+        algos — list of algorithm names e.g. ['bfs', 'dfs', 'astar']
+
+    Returns timing + path + visited order for each algorithm.
+    """
+    data = request.get_json() or {}
+    algos = data.get('algos', ['bfs', 'dfs', 'astar', 'greedy'])
+
+    results = {}
+    for algo in algos:
+        t0 = time.perf_counter()
+        result = run_algorithm(algo)
+        elapsed_ms = round((time.perf_counter() - t0) * 1000)
+        result['time'] = elapsed_ms
+        result['pathLen'] = len(result['path'])
+        results[algo] = result
+
+    return jsonify({'results': results, 'problem': get_state_payload()})
+
+
+def run_algorithm(algo):
+    """Dispatch algorithm to the right problem solver."""
+    prob = state['prob']
+
+    if prob == 'maze':
+        res = solve_maze(algo, state['grid'], state['src'], state['dst'])
+
+    elif prob == 'treasure':
+        res = solve_treasure(algo, state['grid'], state['src'], state['treasures'])
+
+    elif prob == 'escape':
+        res = solve_escape(algo, state['grid'], state['src'], state['exits'], state['fire'])
+
+    elif prob == 'puzzle':
+        res = solve_puzzle(algo, state['puzzle'])
+
+    else:
+        res = {"found": False, "path": [], "visited": [], "nodes": 0, "cost": 0}
+
+    return res
