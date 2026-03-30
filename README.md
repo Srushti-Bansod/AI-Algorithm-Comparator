@@ -9,7 +9,7 @@ solving mazes, treasure hunts, escape sims, and 8-puzzles.
 algo_battle/
 ├── algorithms.py   ← All 6 search algorithms + maze/puzzle generators (Python)
 ├── app.py          ← Flask web server (REST API)
-├── index.html      ← Frontend UI (same look as original, calls Flask)
+├── index.html      ← Frontend UI 
 └── requirements.txt
 ```
 ## How It Works
