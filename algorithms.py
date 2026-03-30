@@ -84,3 +84,84 @@ def generate_treasure(rows, cols):
 
     src = (1, 1)
     return grid, src, treasures, traps
+
+# ─── ESCAPE SIMULATION MAP ──────────────────────────────────────────────────
+
+def generate_escape(rows, cols):
+    """
+    Generate an escape simulation map with exits on edges and fire in corners.
+    Returns: (grid, src, exits, fire)
+    """
+    grid = [[0] * cols for _ in range(rows)]
+
+    # Walls on borders and random interior walls
+    for r in range(rows):
+        for c in range(cols):
+            if r == 0 or c == 0 or r == rows - 1 or c == cols - 1:
+                grid[r][c] = 1
+            elif random.random() < 0.2:
+                grid[r][c] = 1
+
+    # Open exits at mid-edges
+    exits = [
+        (0, cols // 2),
+        (rows - 1, cols // 2),
+        (rows // 2, 0),
+        (rows // 2, cols - 1),
+    ]
+    for er, ec in exits:
+        grid[er][ec] = 0
+
+    # Agent starts in center
+    src = (rows // 2, cols // 2)
+    grid[src[0]][src[1]] = 0
+
+    # Fire in corners
+    fire = [(1, 1), (1, cols - 2), (rows - 2, 1), (rows - 2, cols - 2)]
+    for fr, fc in fire:
+        grid[fr][fc] = 0
+
+    return grid, src, exits, fire
+
+
+# ─── SHARED SEARCH HELPER ───────────────────────────────────────────────────
+
+def grid_search(algo, grid, src, is_goal_fn, neighbors_fn, heuristic_fn, cost_fn, max_nodes=60000):
+    """
+    Core search dispatcher. Runs the chosen algorithm on a grid.
+
+    Parameters:
+        algo         — algorithm name: 'bfs', 'dfs', 'astar', 'greedy', 'ucs', 'dijkstra'
+        grid         — 2D list of cell values
+        src          — (row, col) start position
+        is_goal_fn   — function(r, c) -> bool: True if this cell is the goal
+        neighbors_fn — function(r, c) -> list of (nr, nc)
+        heuristic_fn — function(r, c) -> estimated distance to goal (for A* / Greedy)
+        cost_fn      — function(nr, nc) -> movement cost to enter that cell
+        max_nodes    — safety cap so we never loop forever
+
+    Returns dict:
+        found   — True if goal was reached
+        path    — list of (r, c) from start to goal
+        visited — list of (r, c) in exploration order (for animation)
+        nodes   — number of nodes explored
+        cost    — total path cost
+    """
+    rows = len(grid)
+    cols = len(grid[0])
+
+    # prev maps each cell key -> parent cell (for path reconstruction)
+    prev = {}
+
+    def reconstruct(r, c):
+        """Trace back from goal to start using `prev`."""
+        path = []
+        cur = (r, c)
+        while cur is not None:
+            path.append(cur)
+            cur = prev.get(cur)
+        path.reverse()
+        return path
+
+    visited_order = []   # cells in the order they were explored (for animation)
+    nodes_visited = 0
