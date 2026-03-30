@@ -262,4 +262,64 @@ def grid_search(algo, grid, src, is_goal_fn, neighbors_fn, heuristic_fn, cost_fn
                     prev[(nr, nc)] = (r, c)
                     counter += 1
                     heapq.heappush(heap, (heuristic_fn(nr, nc), counter, nr, nc))
-                    
+
+  # ── UCS ──────────────────────────────────────────────────────────────────
+    elif algo == 'ucs':
+        # Like BFS but expands cheapest node first (no heuristic)
+        g_cost = {(src[0], src[1]): 0}
+        heap = [(0, 0, src[0], src[1])]
+        prev[(src[0], src[1])] = None
+        counter = 0
+
+        while heap and nodes_visited < max_nodes:
+            g, _, r, c = heapq.heappop(heap)
+            if g > g_cost.get((r, c), float('inf')):
+                continue  # stale entry
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": g}
+
+            for nr, nc in neighbors_fn(r, c):
+                ng = g + cost_fn(nr, nc)
+                if ng < g_cost.get((nr, nc), float('inf')):
+                    g_cost[(nr, nc)] = ng
+                    prev[(nr, nc)] = (r, c)
+                    counter += 1
+                    heapq.heappush(heap, (ng, counter, nr, nc))
+
+    # ── DIJKSTRA ─────────────────────────────────────────────────────────────
+    elif algo == 'dijkstra':
+        # Finds shortest paths from source to ALL reachable cells
+        # Stops once the goal is reached
+        dist = {(src[0], src[1]): 0}
+        heap = [(0, 0, src[0], src[1])]
+        visited_set = set()
+        prev[(src[0], src[1])] = None
+        counter = 0
+
+        while heap and nodes_visited < max_nodes:
+            g, _, r, c = heapq.heappop(heap)
+            if (r, c) in visited_set:
+                continue
+            visited_set.add((r, c))
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": g}
+
+            for nr, nc in neighbors_fn(r, c):
+                if (nr, nc) not in visited_set:
+                    ng = g + cost_fn(nr, nc)
+                    if ng < dist.get((nr, nc), float('inf')):
+                        dist[(nr, nc)] = ng
+                        prev[(nr, nc)] = (r, c)
+                        counter += 1
+                        heapq.heappush(heap, (ng, counter, nr, nc))
+
+    return {"found": False, "path": [], "visited": visited_order, "nodes": nodes_visited, "cost": 0}
+
