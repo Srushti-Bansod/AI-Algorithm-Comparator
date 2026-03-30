@@ -29,3 +29,24 @@ Flask Server (app.py)
       ▼
 Browser animates the results on HTML5 Canvas
 ```
+## Quick Start
+
+1. **Install dependencies** (only Flask needed):
+
+   ```bash
+   pip install flask
+   ```
+
+2. **Run the server**:
+
+   ```bash
+   python app.py
+   ```
+
+3. **Open your browser** at:
+
+   ```
+   http://localhost:5000
+   ```
+
+4. Pick a problem, select algorithms, hit **▶ START BATTLE**!
