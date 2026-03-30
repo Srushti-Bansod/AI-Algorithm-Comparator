@@ -165,3 +165,101 @@ def grid_search(algo, grid, src, is_goal_fn, neighbors_fn, heuristic_fn, cost_fn
 
     visited_order = []   # cells in the order they were explored (for animation)
     nodes_visited = 0
+    
+    # ── BFS ──────────────────────────────────────────────────────────────────
+    if algo == 'bfs':
+        # Queue: first in, first out → explores all neighbors at distance d before d+1
+        queue = deque([(src[0], src[1])])
+        seen = {(src[0], src[1])}
+        prev[(src[0], src[1])] = None
+
+        while queue and nodes_visited < max_nodes:
+            r, c = queue.popleft()
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": len(path) - 1}
+
+            for nr, nc in neighbors_fn(r, c):
+                if (nr, nc) not in seen:
+                    seen.add((nr, nc))
+                    prev[(nr, nc)] = (r, c)
+                    queue.append((nr, nc))
+
+    # ── DFS ──────────────────────────────────────────────────────────────────
+    elif algo == 'dfs':
+        # Stack: last in, first out → dives deep before exploring siblings
+        stack = [(src[0], src[1])]
+        seen = set()
+        prev[(src[0], src[1])] = None
+
+        while stack and nodes_visited < max_nodes:
+            r, c = stack.pop()
+            if (r, c) in seen:
+                continue
+            seen.add((r, c))
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": len(path) - 1}
+
+            for nr, nc in neighbors_fn(r, c):
+                if (nr, nc) not in seen:
+                    prev[(nr, nc)] = (r, c)
+                    stack.append((nr, nc))
+
+    # ── A* ───────────────────────────────────────────────────────────────────
+    elif algo == 'astar':
+        # Priority queue sorted by f = g (cost so far) + h (estimated cost to goal)
+        # This guarantees the optimal path if heuristic never overestimates
+        g_cost = {(src[0], src[1]): 0}
+        h0 = heuristic_fn(src[0], src[1])
+        heap = [(h0, 0, src[0], src[1])]   # (f, g, r, c)
+        counter = 0
+        prev[(src[0], src[1])] = None
+
+        while heap and nodes_visited < max_nodes:
+            f, g, r, c = heapq.heappop(heap)
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": g}
+
+            for nr, nc in neighbors_fn(r, c):
+                ng = g + cost_fn(nr, nc)
+                if (nr, nc) not in g_cost or ng < g_cost[(nr, nc)]:
+                    g_cost[(nr, nc)] = ng
+                    prev[(nr, nc)] = (r, c)
+                    f_new = ng + heuristic_fn(nr, nc)
+                    counter += 1
+                    heapq.heappush(heap, (f_new, counter, nr, nc))
+    # ── GREEDY ───────────────────────────────────────────────────────────────
+    elif algo == 'greedy':
+        # Always move to the neighbor closest to the goal (heuristic only, ignores cost)
+        heap = [(heuristic_fn(src[0], src[1]), 0, src[0], src[1])]
+        seen = {(src[0], src[1])}
+        prev[(src[0], src[1])] = None
+        counter = 0
+
+        while heap and nodes_visited < max_nodes:
+            h, _, r, c = heapq.heappop(heap)
+            nodes_visited += 1
+            visited_order.append((r, c))
+
+            if is_goal_fn(r, c):
+                path = reconstruct(r, c)
+                return {"found": True, "path": path, "visited": visited_order, "nodes": nodes_visited, "cost": len(path) - 1}
+
+            for nr, nc in neighbors_fn(r, c):
+                if (nr, nc) not in seen:
+                    seen.add((nr, nc))
+                    prev[(nr, nc)] = (r, c)
+                    counter += 1
+                    heapq.heappush(heap, (heuristic_fn(nr, nc), counter, nr, nc))
+                    
