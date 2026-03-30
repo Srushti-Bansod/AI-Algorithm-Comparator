@@ -767,11 +767,34 @@ body{
     transition:all .15s;
 }
 
-.msel-btn:hover{border-color:var(--border2);color:var(--text);}
-.msel-btn.act{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,.06);}
-.grouped-chart-wrap{position:relative;height:110px;}
-.cbar-section{margin-bottom:8px;}
-.cbar-title{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:var(--text-dim);margin-bottom:5px;}
+.msel-btn:hover{
+    border-color:var(--border2);
+    color:var(--text);
+}
+
+.msel-btn.act{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:rgba(0,212,255,.06);
+}
+
+.grouped-chart-wrap{
+    position:relative;
+    height:110px;
+}
+
+.cbar-section{
+    margin-bottom:8px;
+}
+
+.cbar-title{
+    font-family:'JetBrains Mono',monospace;
+    font-size:9px;
+    letter-spacing:1px;
+    color:var(--text-dim);
+    margin-bottom:5px;
+}
+
 .cbar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
 .cbar-name{font-family:'JetBrains Mono',monospace;font-size:9px;width:38px;flex-shrink:0;}
 .cbar-track{flex:1;height:9px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
