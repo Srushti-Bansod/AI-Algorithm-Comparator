@@ -409,3 +409,147 @@ def solve_escape(algo, grid, src, exits, fire):
         return (r, c) in set(exits)
 
     return grid_search(algo, grid, src, is_goal, neighbors, heuristic, cost)
+
+# ─── 8-PUZZLE SOLVER ─────────────────────────────────────────────────────────
+
+PUZZLE_GOAL = [1, 2, 3, 4, 5, 6, 7, 8, 0]
+PUZZLE_GOAL_KEY = ','.join(map(str, PUZZLE_GOAL))
+
+
+def puzzle_moves(state):
+    """
+    Return all states reachable from this state by sliding one tile.
+    The blank (0) can move up/down/left/right.
+    """
+    blank = state.index(0)
+    br, bc = blank // 3, blank % 3
+    moves = []
+    for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        nr, nc = br + dr, bc + dc
+        if 0 <= nr < 3 and 0 <= nc < 3:
+            new_state = state[:]
+            new_state[blank] = new_state[nr * 3 + nc]
+            new_state[nr * 3 + nc] = 0
+            moves.append(new_state)
+    return moves
+
+
+def puzzle_heuristic(state):
+    """Manhattan distance: sum of each tile's distance from its goal position."""
+    h = 0
+    for i, v in enumerate(state):
+        if v == 0:
+            continue
+        goal_pos = PUZZLE_GOAL.index(v)
+        h += abs(i // 3 - goal_pos // 3) + abs(i % 3 - goal_pos % 3)
+    return h
+
+
+def solve_puzzle(algo, init):
+    """
+    Solve the 8-puzzle starting from `init` state (list of 9 ints, 0 = blank).
+    Returns same dict format as grid_search.
+    """
+    MAX = 15000
+    nodes = 0
+    visited_order = []
+
+    def key(state):
+        return ','.join(map(str, state))
+
+    init_key = key(init)
+
+    # BFS / UCS / Dijkstra — all treat puzzle moves as uniform cost
+    if algo in ('bfs', 'ucs', 'dijkstra'):
+        queue = deque([{'state': init[:], 'path': [init[:]]}])
+        seen = {init_key}
+
+        while queue and nodes < MAX:
+            cur = queue.popleft()
+            s, p = cur['state'], cur['path']
+            nodes += 1
+            visited_order.append(s[:])
+
+            if key(s) == PUZZLE_GOAL_KEY:
+                return {"found": True, "path": p, "visited": visited_order, "nodes": nodes, "cost": len(p) - 1}
+
+            for ns in puzzle_moves(s):
+                k = key(ns)
+                if k not in seen:
+                    seen.add(k)
+                    queue.append({'state': ns, 'path': p + [ns]})
+
+    elif algo == 'dfs':
+        stack = [{'state': init[:], 'path': [init[:]]}]
+        seen = set()
+
+        while stack and nodes < MAX:
+            cur = stack.pop()
+            s, p = cur['state'], cur['path']
+            k = key(s)
+            if k in seen:
+                continue
+            seen.add(k)
+            nodes += 1
+            visited_order.append(s[:])
+
+            if k == PUZZLE_GOAL_KEY:
+                return {"found": True, "path": p, "visited": visited_order, "nodes": nodes, "cost": len(p) - 1}
+
+            for ns in puzzle_moves(s):
+                if key(ns) not in seen:
+                    stack.append({'state': ns, 'path': p + [ns]})
+
+    elif algo == 'astar':
+        # f = g (moves so far) + h (Manhattan distance)
+        g_cost = {init_key: 0}
+        counter = 0
+        heap = [(puzzle_heuristic(init), 0, counter, init[:], [init[:]])]
+
+        while heap and nodes < MAX:
+            f, g, _, s, p = heapq.heappop(heap)
+            k = key(s)
+            nodes += 1
+            visited_order.append(s[:])
+
+            if k == PUZZLE_GOAL_KEY:
+                return {"found": True, "path": p, "visited": visited_order, "nodes": nodes, "cost": g}
+
+            for ns in puzzle_moves(s):
+                ng = g + 1
+                nk = key(ns)
+                if nk not in g_cost or ng < g_cost[nk]:
+                    g_cost[nk] = ng
+                    counter += 1
+                    heapq.heappush(heap, (ng + puzzle_heuristic(ns), ng, counter, ns, p + [ns]))
+
+    elif algo == 'greedy':
+        counter = 0
+        heap = [(puzzle_heuristic(init), 0, counter, init[:], [init[:]])]
+        seen = {init_key}
+
+        while heap and nodes < MAX:
+            h, _, _, s, p = heapq.heappop(heap)
+            nodes += 1
+            visited_order.append(s[:])
+
+            if key(s) == PUZZLE_GOAL_KEY:
+                return {"found": True, "path": p, "visited": visited_order, "nodes": nodes, "cost": len(p) - 1}
+
+            for ns in puzzle_moves(s):
+                nk = key(ns)
+                if nk not in seen:
+                    seen.add(nk)
+                    counter += 1
+                    heapq.heappush(heap, (puzzle_heuristic(ns), 0, counter, ns, p + [ns]))
+
+    return {"found": False, "path": [], "visited": visited_order, "nodes": nodes, "cost": 0}
+
+
+def shuffle_puzzle():
+    """Generate a solvable shuffled 8-puzzle state by making random moves from goal."""
+    state = PUZZLE_GOAL[:]
+    for _ in range(200):
+        moves = puzzle_moves(state)
+        state = random.choice(moves)
+    return state
