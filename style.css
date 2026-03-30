@@ -795,7 +795,13 @@ body{
     margin-bottom:5px;
 }
 
-.cbar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.cbar-row{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    margin-bottom:4px;
+}
+
 .cbar-name{font-family:'JetBrains Mono',monospace;font-size:9px;width:38px;flex-shrink:0;}
 .cbar-track{flex:1;height:9px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
 .cbar-fill{height:100%;width:0;transition:width .9s cubic-bezier(.34,1.56,.64,1);border-radius:4px;}
